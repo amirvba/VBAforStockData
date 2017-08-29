@@ -1,0 +1,58 @@
+Rem Attribute VBA_ModuleType=VBAModule
+Option VBASupport 1
+Sub CopySecond()
+
+    Dim Wb1 As Workbook
+    Dim Wb2 As Workbook
+    Dim WbMain As Workbook
+    Dim i As Integer
+    Dim MyAddress As String
+    MyAddress1 = ThisWorkbook.Path & "\Book1.xlsx"
+    MyAddress2 = ThisWorkbook.Path & "\Book2.xlsx"
+    
+    Set WbMain = ActiveWorkbook
+    Set Wb1 = Workbooks.Open(MyAddress1)
+    Set Wb2 = Workbooks.Open(MyAddress2)
+
+    Wb2.Worksheets(1).UsedRange.Copy
+    Windows("Main.xlsm").Activate
+    Range("A1").Select
+    ActiveSheet.Paste
+    
+    i = 0
+    For Each cell In Wb2.Worksheets(1).Range(Range("B2").Address, Range("B2").End(xlDown).Address)
+        For Each mycell In Wb1.Worksheets(1).Range(Range("A1").Address, Range("A1").End(xlDown).Address)
+            i = i + 1
+   ''''''''''
+            WbMain.Worksheets(1).Range("A1").Offset(i, 3).Value = mycell.Offset(0, 3).Value
+    
+            If mycell.Value = cell.Value Then
+                'Debug.Assert mycell.Offset(2, 0).Value
+                
+                If mycell.Offset(2, 0).Value = cell.Offset(2, 0).Value Then
+                WbMain.Worksheets(1).Range("A1").Offset(i, 5).Value = mycell.Offset(0, 2).Value
+                End If
+            End If
+        Next mycell
+    Next cell
+     
+    j = 0
+    For Each mycell In Wb1.Worksheets(1).Range(Range("A1").Address, Range("A1").End(xlDown).Address)
+       WbMain.Worksheets(1).Range("A1").Offset(j, 3).Value = mycell.Offset(0, 2).Value
+       j = j + 1
+    Next mycell
+    
+    Wb2.Application.CutCopyMode = False
+    Wb1.Close (False)
+    Wb2.Close (False)
+    Call EhsanCompare
+    
+End Sub
+
+Sub EhsanCompare()
+        For Each cell In Worksheets(1).Range(Range("A1").Address, Range("A1").End(xlDown).Address)
+            If cell.Offset(0, 3).Value > cell.Offset(0, 2) Then
+                cell.Offset(0, 4).Value = "Problem!"
+            End If
+        Next cell
+End Sub
