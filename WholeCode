@@ -1,0 +1,127 @@
+Sub runAll()
+
+    Call myDownload
+    Call UpdateThisSheet
+    Call Delete_ahmadNew
+    
+End Sub
+
+Sub ChangeFont()
+
+'What:=ChrW(1603), Replacement:=ChrW(1705)
+'K
+    Cells.Replace What:=ChrW(1603), Replacement:=ChrW(1705), LookAt:=xlPart, SearchOrder _
+        :=xlByRows, MatchCase:=False, SearchFormat:=False, ReplaceFormat:=False
+        
+'i
+ Cells.Replace What:=ChrW(1610), Replacement:=ChrW(1740), LookAt:=xlPart, SearchOrder _
+        :=xlByRows, MatchCase:=False, SearchFormat:=False, ReplaceFormat:=False
+
+End Sub
+
+Sub myDownload()
+Dim myURL As String
+myURL = "http://members.tsetmc.com/tsev2/excel/MarketWatchPlus.aspx?d=0"
+
+Dim HttpReq As Object
+Set HttpReq = CreateObject("Microsoft.XMLHTTP")
+HttpReq.Open "GET", myURL, False, "username", "password"
+HttpReq.send
+
+myURL = HttpReq.responseBody
+If HttpReq.Status = 200 Then
+    Set oStrm = CreateObject("ADODB.Stream")
+    oStrm.Open
+    oStrm.Type = 1
+    oStrm.Write HttpReq.responseBody
+    oStrm.SaveToFile ThisWorkbook.Path & "\ahmadNew.xlsx", 2  ' 1 = no overwrite, 2 = overwrite
+    
+    oStrm.Close
+End If
+
+
+End Sub
+
+
+Sub UpdateThisSheet()
+
+Dim m As Integer
+
+m = 10 'Column number fo gheimate Paiani!
+
+Dim Wkb1 As Workbook
+Dim sht1 As Range
+Dim Wkb2 As Workbook
+Dim sht2 As Range
+Dim Number_of_Rows_in_Downloaded_file As Double
+Dim Number_of_Rows_in_Main_file As Double
+
+Dim myAddresss As String
+myAddress = ThisWorkbook.Path & "\ahmadNew.xlsx"
+
+
+Set Wkb1 = ActiveWorkbook
+
+'On Error GoTo Handler
+Set Wkb2 = Workbooks.Open(myAddress)
+
+
+Wkb2.Worksheets(1).Activate
+
+Number_of_Rows_in_Downloaded_file = ActiveSheet.UsedRange.Rows.Count
+Call ChangeFont
+
+
+Wkb1.Worksheets(1).Activate
+Number_of_Rows_in_Main_file = ActiveSheet.UsedRange.Rows.Count
+Call ChangeFont
+
+
+ 'Wkb1.Worksheets(1).Range("B1").Value = Wkb2.Worksheets(1).Range("A3").Offset(0, m).Value
+ 
+ If Wkb1.Worksheets(1).Range("B1").Value <> Wkb2.Worksheets(1).Range("A3").Offset(0, m).Value Then
+    MsgBox "Sotune 10, dige neshan dahande gheimat nist! khodet dasti barresi kon!"
+ End If
+
+For Each cell In Wkb1.Worksheets(1).Range(Range("A2").Address, Range("A2").Offset(Number_of_Rows_in_Main_file, 0).Address)
+
+    For i = 0 To Number_of_Rows_in_Downloaded_file + 5
+    
+    If cell.Value <> "" Then
+    
+        With Wkb2.Worksheets(1).Range("A3").Offset(i, 0)
+            If cell.Value = .Value Then
+                cell.Offset(0, 1).Value = .Offset(0, m).Value / 10
+                .Offset(0, m).Interior.Color = 65535
+                .Offset(0, m).Font.Bold = True
+               
+            End If
+        End With
+    End If
+    Next i
+
+   'Wkb1.Worksheets(1).Activate
+Next cell
+
+Wkb2.Close (True)
+
+
+'Handler:
+'    MsgBox "Aval ahmadNew ra Download kon!"
+'    Exit Sub
+
+'age mikhai file ahmadNew ra pak koni badesh:
+'Kill myAddress
+
+End Sub
+
+Sub Delete_ahmadNew()
+
+Dim myAddresss As String
+myAddress = ThisWorkbook.Path & "\ahmadNew.xlsx"
+
+
+On Error Resume Next
+Kill myAddress
+
+End Sub
