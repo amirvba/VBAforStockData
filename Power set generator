@@ -1,0 +1,68 @@
+Sub MatrixGenerator()
+    
+    Dim i As Long
+    Dim j As Long
+    
+    Application.ScreenUpdating = False
+    Cells.ClearContents
+    
+
+    Dim AnzahlDerElemente As Integer
+    AnzahlDerElemente= Range("NrOfItems").Value
+    With Range("B2")
+        For j = 0 To AnzahlDerElemente- 1
+            For i = 0 To 2 ^ AnzahlDerElemente- 1
+                .Offset(i, j).Value = 0
+                .Offset(i, -1).Value = i
+          
+                Next i
+            .Offset(-1, j).Value = j + 1
+        Next j
+        
+      
+        .Offset(0, 0).Value = 0
+        .Offset(1, 0).Value = 1    
+    End With
+    
+         
+       ActiveWorkbook.Names.Add Name:="TMatrix", RefersToR1C1:=Range("B2:B3")
+       Do While Range("TMatrix").Rows.Count < 2 ^ AnzahlDerElemente
+           Call NaechteGeneration(Range("TMatrix"))
+       Loop
+       
+        Application.CutCopyMode = False
+       
+        Rows("2:2").Delete Shift:=xlUp
+        Range("A1").Select
+    
+        Rows("1:1").Font.Bold = True
+        Columns("A:A").HorizontalAlignment = xlCenter
+        Columns("A:A").Font.Bold = True
+        
+        Application.ScreenUpdating = True
+End Sub
+
+
+Sub NaechteGeneration(ByRef MyRange As Range)
+
+Application.ScreenUpdating = False
+   
+   Dim i As Long
+    MyRange.Select
+    With MyRange
+        .Copy
+        .Offset(.Rows.Count, 0).Select
+        ActiveSheet.Paste
+        
+        For i = .Rows.Count To .Rows.Count * 2 - 1
+            Cells(.Row, .Column).Offset(i, .Columns.Count).Value = 1
+        Next i
+                                                                        
+    ActiveWorkbook.Names.Add Name:="TMatrix", RefersToR1C1:=Range(Cells(.Row, .Column).Address, _
+            Cells(.Row, .Column).Offset(.Rows.Count * 2 - 1, .Columns.Count).Address)
+    
+    Range("TMatrix").Select
+     
+    End With
+    Application.ScreenUpdating = True
+End Sub
